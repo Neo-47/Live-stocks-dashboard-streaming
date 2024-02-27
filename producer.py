@@ -13,7 +13,7 @@ def on_message(ws, message):
     payload = json.loads(message)
     df = pd.DataFrame(payload['data'])
     print(df)
-    producer.send('test-topic', payload['data'])
+    producer.send('stocks-stream', payload['data'])
     print("payload sent to consumer")
 
 def on_error(ws, error):

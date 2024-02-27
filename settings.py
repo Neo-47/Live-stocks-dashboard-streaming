@@ -11,3 +11,7 @@ from prefect import task, flow
 from prefect_gcp.cloud_storage import GcsBucket
 from prefect_gcp import GcpCredentials
 import opendatasets as od
+
+
+DATASET_NAME = f"stocks_data"
+DATASET_FILE = f"stocks"

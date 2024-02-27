@@ -1,8 +1,11 @@
 
 from settings import *
 
-DATASET_NAME = f"stocks_data"
-DATASET_FILE = f"stocks"
+
+# Getting the data as JSON
+consumer = KafkaConsumer('stocks-stream',
+bootstrap_servers=['localhost:9092'],
+value_deserializer=lambda m: json.loads(m.decode('ascii')))
 
 def write_local(df: pd.DataFrame, dataset_name: str, dataset_file: str) -> Path:
     
@@ -34,13 +37,13 @@ def write_bq(df: pd.DataFrame) -> None:
     
 
 
-# Getting the data as JSON
-consumer = KafkaConsumer('test-topic',
-bootstrap_servers=['localhost:9092'],
-value_deserializer=lambda m: json.loads(m.decode('ascii')))
+
 stocks = pd.DataFrame()
+dataset_name = DATASET_NAME
+dataset_file = DATASET_FILE
 
 i = 1
+
 for message in consumer:
     print(message)
     df = pd.DataFrame(message.value)
@@ -48,11 +51,11 @@ for message in consumer:
     
     if(i % 20 == 0):
         
+        print("Writing to the cloud")
         stocks['t'] = pd.to_datetime(stocks['t'], unit='ms')
-
         stocks = stocks.explode("c")
 
-        path = write_local(stocks, DATASET_NAME, DATASET_FILE)
+        path = write_local(stocks, dataset_name, dataset_file)
         write_gcs(path)
         write_bq(stocks)
         
@@ -63,13 +66,6 @@ for message in consumer:
     
 
 
-stocks['t'] = pd.to_datetime(stocks['t'], unit='ms')
-
-stocks = stocks.explode("c")
-
-path = write_local(stocks, DATASET_NAME, DATASET_FILE)
-write_gcs(path)
-write_bq(stocks)
 
 
 
